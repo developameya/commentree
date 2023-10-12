@@ -1,3 +1,4 @@
+import 'package:commentree/src/core/common/constants/constants.dart';
 import 'package:commentree/src/core/utils/error/failures.dart';
 import 'package:commentree/src/features/home/data/datasources/comments_datasource.dart';
 import 'package:commentree/src/features/home/domain/entities/comment_entity.dart';
@@ -7,12 +8,37 @@ import 'package:injectable/injectable.dart';
 
 @LazySingleton(as: CommentsRepository)
 class CommentsRepositoryImpl extends CommentsRepository {
-  final CommentsDatasource _datasource;
+  final CommentsDatasource _remoteDatasource;
+  final CommentsDatasource _localDatasource;
 
-  CommentsRepositoryImpl({required CommentsDatasource datasource})
-      : _datasource = datasource;
+  CommentsRepositoryImpl({
+    @Named(remoteDatsourceKey) required CommentsDatasource remoteDatasource,
+    @Named(localDatasourceKey) required CommentsDatasource localDatasource,
+  })  : _remoteDatasource = remoteDatasource,
+        _localDatasource = localDatasource;
   @override
-  Future<Either<Failure, List<CommentEntity>>> fetchComments() {
-    return _datasource.fetchComments();
+  Future<Either<Failure, List<CommentEntity>>> fetchComments() async {
+    late Future<Either<Failure, List<CommentEntity>>> response;
+
+    try {
+      //try to fetch data from the local datasource.
+      final Either<Failure, List<CommentEntity>> localResponse =
+          await _localDatasource.fetchComments();
+
+      //if local data is available, return the data, else get data from remote.
+      if (localResponse.isRight()) {
+        localResponse.fold(
+          (l) => null,
+          (result) => response = Future.value(right(result)),
+        );
+      } else {
+        response = _remoteDatasource.fetchComments();
+      }
+    } on Exception {
+      return Future.value(left(
+          const CacheFailure(message: 'error occured while fetching data.')));
+    }
+
+    return response;
   }
 }
