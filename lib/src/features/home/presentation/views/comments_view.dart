@@ -36,7 +36,7 @@ class CommentsView extends HookWidget {
       },
       builder: (context, state) {
         return isLoading.value
-            ? const CircularProgressIndicator()
+            ? const Center(child: CircularProgressIndicator())
             : ListView.builder(
                 itemCount: state.comments.length,
                 itemBuilder: (context, index) => GestureDetector(
