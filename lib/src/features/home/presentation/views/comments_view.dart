@@ -1,5 +1,3 @@
-import 'package:auto_route/auto_route.dart';
-import 'package:commentree/src/core/common/routing/app_router.dart';
 import 'package:commentree/src/core/common/widgets/banner_widget.dart';
 import 'package:commentree/src/core/utils/state/app_state.dart';
 import 'package:commentree/src/features/home/presentation/state/comments_cubit.dart';
@@ -61,18 +59,14 @@ class CommentsView extends HookWidget {
                   itemBuilder: (context, index) =>
                       index >= state.comments.length
                           ? buildLoadingIndicator()
-                          : GestureDetector(
-                              onTap: () =>
-                                  context.router.push(const CommentRoute()),
-                              child: GFCard(
-                                color: Theme.of(context).focusColor,
-                                title: GFListTile(
-                                  listItemTextColor: Colors.white,
-                                  titleText: state.comments[index].name,
-                                  subTitle: Text(state.comments[index].email),
-                                ),
-                                content: Text(state.comments[index].body),
+                          : GFCard(
+                              color: Theme.of(context).focusColor,
+                              title: GFListTile(
+                                listItemTextColor: Colors.white,
+                                titleText: state.comments[index].name,
+                                subTitle: Text(state.comments[index].email),
                               ),
+                              content: Text(state.comments[index].body),
                             ),
                 ),
               );
