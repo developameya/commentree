@@ -8,6 +8,8 @@ import 'package:flutter/foundation.dart';
 
 part 'app_router.gr.dart';
 
+///Contains the routing logic for the application.
+///
 @AutoRouterConfig(replaceInRouteName: 'Page|Screen|View,Route')
 class AppRouter extends _$AppRouter implements AutoRouteGuard {
   @override

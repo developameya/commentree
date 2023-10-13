@@ -8,7 +8,6 @@ class MainApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    //TODO: add a listener for first use hydrated bloc, and update the route notifier.
     return MaterialApp.router(
       theme: ThemeData.dark(useMaterial3: true),
       routerConfig: sl<AppRouter>().config(reevaluateListenable: routeNotfier),
