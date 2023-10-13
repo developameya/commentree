@@ -36,6 +36,7 @@ ios/Podfile.lock
 pubspec.lock
 /windows
 /web
+/debug-info
 
 # Symbolication related
 app.*.symbols
