@@ -21,20 +21,16 @@ class CommentsView extends HookWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isLoading = useState<bool>(false);
     return BlocConsumer<CommentsCubit, CommentsState>(
       listener: (context, state) {
         switch (state.status) {
           case AppState.initial:
             break;
           case AppState.loading:
-            isLoading.value = true;
             break;
           case AppState.success:
-            isLoading.value = false;
             break;
           case AppState.error:
-            isLoading.value = false;
             final banner = buildNoticeBanner(context, state.errorMessage);
             ScaffoldMessenger.of(context).clearMaterialBanners();
             ScaffoldMessenger.of(context).showMaterialBanner(banner);
@@ -42,40 +38,34 @@ class CommentsView extends HookWidget {
         }
       },
       builder: (context, state) {
-        return isLoading.value
-            ? buildLoadingIndicator()
-            : NotificationListener<ScrollNotification>(
-                onNotification: (notification) {
-                  if (notification is ScrollEndNotification &&
-                      _scrollController.position.extentAfter == 0) {
-                    BlocProvider.of<CommentsCubit>(context).fetchComments();
-                  }
-                  return false;
-                },
-                child: ListView.builder(
-                  itemCount: state.itemCount,
-                  controller: _scrollController,
-                  shrinkWrap: true,
-                  itemBuilder: (context, index) =>
-                      //if the current index is greater than the length of list
-                      //of comments, display a loading indicator at current index.
-                      index >= state.comments.length
-                          ? buildLoadingIndicator()
-                          : GestureDetector(
-                              onTap: () =>
-                                  context.router.push(const CommentRoute()),
-                              child: GFCard(
-                                color: Theme.of(context).focusColor,
-                                title: GFListTile(
-                                  listItemTextColor: Colors.white,
-                                  titleText: state.comments[index].name,
-                                  subTitle: Text(state.comments[index].email),
-                                ),
-                                content: Text(state.comments[index].body),
-                              ),
-                            ),
-                ),
-              );
+        return NotificationListener<ScrollNotification>(
+          onNotification: (notification) {
+            if (notification is ScrollEndNotification &&
+                _scrollController.position.extentAfter < 5000) {
+              BlocProvider.of<CommentsCubit>(context).fetchComments();
+            }
+            return false;
+          },
+          child: ListView.builder(
+            itemCount: state.itemCount,
+            controller: _scrollController,
+            shrinkWrap: true,
+            itemBuilder: (context, index) => index >= state.comments.length
+                ? buildLoadingIndicator()
+                : GestureDetector(
+                    onTap: () => context.router.push(const CommentRoute()),
+                    child: GFCard(
+                      color: Theme.of(context).focusColor,
+                      title: GFListTile(
+                        listItemTextColor: Colors.white,
+                        titleText: state.comments[index].name,
+                        subTitle: Text(state.comments[index].email),
+                      ),
+                      content: Text(state.comments[index].body),
+                    ),
+                  ),
+          ),
+        );
       },
     );
   }
