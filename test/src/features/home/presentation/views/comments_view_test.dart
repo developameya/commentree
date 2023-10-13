@@ -1,5 +1,6 @@
 import 'package:commentree/src/core/utils/state/app_state.dart';
 import 'package:commentree/src/features/home/domain/entities/comment_entity.dart';
+import 'package:commentree/src/features/home/domain/usecases/home_usecases.dart';
 import 'package:commentree/src/features/home/presentation/state/comments_cubit.dart';
 import 'package:commentree/src/features/home/presentation/state/comments_state.dart';
 import 'package:commentree/src/features/home/presentation/views/comments_view.dart';
@@ -7,8 +8,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:getwidget/getwidget.dart';
+import 'package:mockito/mockito.dart';
+
+class MockFetchComments extends Mock implements FetchComments {}
 
 class FakeCommentsCubit extends CommentsCubit {
+  FakeCommentsCubit() : super(fetchComments: MockFetchComments());
   @override
   void fetchComments() {
     debugPrint("testing cubit");
@@ -41,7 +46,7 @@ void main() {
 
   setUp(() {
     fakeCubit = FakeCommentsCubit();
-    sut = const CommentsView();
+    sut = CommentsView();
   });
 
   tearDown(() {
@@ -140,7 +145,7 @@ void main() {
 
       fakeCubit!.emit(testInput);
 
-      await tester.pump();
+      await tester.pumpAndSettle(const Duration(seconds: 10));
 
       //ASSERT
       expect(findLoadingIndicator, findsNothing);
@@ -165,6 +170,7 @@ void main() {
       //ASSERT
       expect(findBanner, findsOneWidget);
       await tester.pumpAndSettle(const Duration(seconds: 10));
+      await tester.pumpAndSettle(const Duration(seconds: 10));
     });
 
     testWidgets(
@@ -175,8 +181,10 @@ void main() {
       await tester.pumpWidget(materialAppWrapper(sut!, fakeCubit!));
 
       //ACT
-      fakeCubit!.emit(fakeCubit!.state
-          .copyWith(status: AppState.success, comments: testComments));
+      fakeCubit!.emit(fakeCubit!.state.copyWith(
+          status: AppState.success,
+          comments: testComments,
+          listLength: testComments.length));
       await tester.pump();
 
       final findCard = find.byType(GFCard, skipOffstage: false);
@@ -200,6 +208,7 @@ void main() {
       expect(findCard, findsWidgets);
       expect(findBanner, findsOneWidget);
       await tester.pumpAndSettle(const Duration(seconds: 10));
+      await tester.pumpAndSettle(const Duration(seconds: 10));
     });
   });
 
@@ -208,7 +217,10 @@ void main() {
         (tester) async {
       //ARRANGE
       final testInput = fakeCubit!.state.copyWith(
-          status: AppState.success, errorMessage: '', comments: testComments);
+          status: AppState.success,
+          errorMessage: '',
+          comments: testComments,
+          listLength: testComments.length);
 
       await tester.pumpWidget(materialAppWrapper(sut!, fakeCubit!));
 
@@ -229,8 +241,10 @@ void main() {
     testWidgets('when in success state, displays the list of comments.',
         (tester) async {
       //ARRANGE
-      final testInput = fakeCubit!.state
-          .copyWith(status: AppState.success, comments: testComments);
+      final testInput = fakeCubit!.state.copyWith(
+          status: AppState.success,
+          comments: testComments,
+          listLength: testComments.length);
       await tester.pumpWidget(materialAppWrapper(sut!, fakeCubit!));
 
       //ACT
@@ -265,8 +279,10 @@ void main() {
 
       //2
       //ARRANGE
-      final testInput = fakeCubit!.state
-          .copyWith(status: AppState.success, comments: testComments);
+      final testInput = fakeCubit!.state.copyWith(
+          status: AppState.success,
+          comments: testComments,
+          listLength: testComments.length);
       await tester.pumpWidget(materialAppWrapper(sut!, fakeCubit!));
 
       //ACT
@@ -286,5 +302,27 @@ void main() {
       //ASSERT
       expect(findBanner, findsNothing);
     });
+  });
+
+  testWidgets('when more results are expected, displays a loading indicator.',
+      (tester) async {
+    //ARRANGE
+    final testInput = fakeCubit!.state.copyWith(
+        status: AppState.success,
+        comments: testComments,
+        listLength: testComments.length + 1);
+    await tester.pumpWidget(materialAppWrapper(sut!, fakeCubit!));
+
+    //ACT
+    fakeCubit!.emit(testInput);
+    await tester.pump();
+
+    final findIndicator =
+        find.byType(CircularProgressIndicator, skipOffstage: false);
+    await tester.scrollUntilVisible(findIndicator, 100);
+    await tester.pump();
+
+    //ASSERT
+    expect(findIndicator, findsOneWidget);
   });
 }

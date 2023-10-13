@@ -4,13 +4,20 @@ import 'package:commentree/src/core/common/widgets/banner_widget.dart';
 import 'package:commentree/src/core/utils/state/app_state.dart';
 import 'package:commentree/src/features/home/presentation/state/comments_cubit.dart';
 import 'package:commentree/src/features/home/presentation/state/comments_state.dart';
+import 'package:commentree/src/features/home/presentation/widgets/loading_indicator.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:getwidget/getwidget.dart';
 
+//if only 3 posts remain out of sight, fetch new posts
 class CommentsView extends HookWidget {
-  const CommentsView({super.key});
+  ///Provides information with regards to scroll position of the
+  ///list.
+  final ScrollController _scrollController;
+
+  ///Creates comment view.
+  CommentsView({super.key}) : _scrollController = ScrollController();
 
   @override
   Widget build(BuildContext context) {
@@ -36,20 +43,37 @@ class CommentsView extends HookWidget {
       },
       builder: (context, state) {
         return isLoading.value
-            ? const Center(child: CircularProgressIndicator())
-            : ListView.builder(
-                itemCount: state.comments.length,
-                itemBuilder: (context, index) => GestureDetector(
-                  onTap: () => context.router.push(const CommentRoute()),
-                  child: GFCard(
-                    color: Theme.of(context).focusColor,
-                    title: GFListTile(
-                      listItemTextColor: Colors.white,
-                      titleText: state.comments[index].name,
-                      subTitle: Text(state.comments[index].email),
-                    ),
-                    content: Text(state.comments[index].body),
-                  ),
+            ? buildLoadingIndicator()
+            : NotificationListener<ScrollNotification>(
+                onNotification: (notification) {
+                  if (notification is ScrollEndNotification &&
+                      _scrollController.position.extentAfter == 0) {
+                    BlocProvider.of<CommentsCubit>(context).fetchComments();
+                  }
+                  return false;
+                },
+                child: ListView.builder(
+                  itemCount: state.listLength,
+                  controller: _scrollController,
+                  shrinkWrap: true,
+                  itemBuilder: (context, index) =>
+                      //if the current index is greater than the length of list
+                      //of comments, display a loading indicator at current index.
+                      index >= state.comments.length
+                          ? buildLoadingIndicator()
+                          : GestureDetector(
+                              onTap: () =>
+                                  context.router.push(const CommentRoute()),
+                              child: GFCard(
+                                color: Theme.of(context).focusColor,
+                                title: GFListTile(
+                                  listItemTextColor: Colors.white,
+                                  titleText: state.comments[index].name,
+                                  subTitle: Text(state.comments[index].email),
+                                ),
+                                content: Text(state.comments[index].body),
+                              ),
+                            ),
                 ),
               );
       },
