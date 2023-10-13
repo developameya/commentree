@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:commentree/src/core/common/constants/constants.dart';
+import 'package:commentree/src/core/common/services/secret_service/secret_service.dart';
 import 'package:commentree/src/core/utils/error/failures.dart';
 import 'package:commentree/src/features/home/data/datasources/comments_datasource.dart';
 import 'package:commentree/src/features/home/data/models/comment_model.dart';
@@ -23,11 +24,12 @@ class RemoteCommentsDatasourceImpl extends CommentsDatasource {
       {required int count, required int page}) async {
     try {
       final Response<String> response = await _dio.get(
-          'https://jsonplaceholder.typicode.com/comments',
-          queryParameters: {
-            '_page': page.toString(),
-            'limit': count.toString(),
-          });
+        SecretService.path,
+        queryParameters: {
+          '_page': page.toString(),
+          'limit': count.toString(),
+        },
+      );
 
       if (response.statusCode == 200) {
         try {
