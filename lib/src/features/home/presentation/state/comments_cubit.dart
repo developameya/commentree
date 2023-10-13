@@ -4,7 +4,6 @@ import 'package:commentree/src/core/utils/state/app_state.dart';
 import 'package:commentree/src/features/home/domain/entities/comment_entity.dart';
 import 'package:commentree/src/features/home/domain/usecases/home_usecases.dart';
 import 'package:commentree/src/features/home/presentation/state/comments_state.dart';
-import 'package:flutter/foundation.dart';
 import 'package:hydrated_bloc/hydrated_bloc.dart';
 
 class CommentsCubit extends Cubit<CommentsState> {
@@ -53,7 +52,5 @@ class CommentsCubit extends Cubit<CommentsState> {
         errorMessage: '',
       ),
     );
-    debugPrint(
-        'page: ${state.pageNumber}, resultLength: ${state.comments.length}, itemCount: ${state.itemCount}, lastResult: ${state.hasReachedEndOfResults}');
   }
 }
