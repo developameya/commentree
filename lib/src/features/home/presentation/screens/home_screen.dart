@@ -23,7 +23,7 @@ class HomeScreen extends StatelessWidget {
           builder: (context) {
             return FloatingActionButton(
               onPressed: () =>
-                  BlocProvider.of<CommentsCubit>(context).fetchComments(),
+                  BlocProvider.of<CommentsCubit>(context).refresh(),
               child: const Icon(Icons.refresh),
             );
           },

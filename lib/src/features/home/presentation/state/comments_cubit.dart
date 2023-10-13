@@ -29,6 +29,14 @@ class CommentsCubit extends HydratedCubit<CommentsState> {
         .then((result) => result.fold(_ifLeft, _ifRight));
   }
 
+  ///Clears all cached data, and fetches from datasource.
+  ///
+  void refresh() {
+    clear();
+    emit(const CommentsState());
+    fetchComments();
+  }
+
   _ifLeft(Failure failure) => emit(state.copyWith(
         status: AppState.error,
         errorMessage: failure.message,
