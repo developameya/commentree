@@ -22,6 +22,7 @@ class CommentsView extends HookWidget {
   @override
   Widget build(BuildContext context) {
     return BlocConsumer<CommentsCubit, CommentsState>(
+      buildWhen: (previous, current) => previous.comments != current.comments,
       listener: (context, state) {
         switch (state.status) {
           case AppState.initial:
