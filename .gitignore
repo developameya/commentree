@@ -10,6 +10,7 @@
 .svn/
 migrate_working_dir/
 .env
+ios/Podfile.lock
 
 # IntelliJ related
 *.iml
