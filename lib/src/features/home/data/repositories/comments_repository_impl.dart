@@ -17,13 +17,14 @@ class CommentsRepositoryImpl extends CommentsRepository {
   })  : _remoteDatasource = remoteDatasource,
         _localDatasource = localDatasource;
   @override
-  Future<Either<Failure, List<CommentEntity>>> fetchComments() async {
+  Future<Either<Failure, List<CommentEntity>>> fetchComments(
+      {required int count, required int page}) async {
     late Future<Either<Failure, List<CommentEntity>>> response;
 
     try {
       //try to fetch data from the local datasource.
       final Either<Failure, List<CommentEntity>> localResponse =
-          await _localDatasource.fetchComments();
+          await _localDatasource.fetchComments(page: page, count: count);
 
       //if local data is available, return the data, else get data from remote.
       if (localResponse.isRight()) {
@@ -32,7 +33,7 @@ class CommentsRepositoryImpl extends CommentsRepository {
           (result) => response = Future.value(right(result)),
         );
       } else {
-        response = _remoteDatasource.fetchComments();
+        response = _remoteDatasource.fetchComments(page: page, count: count);
       }
     } on Exception {
       return Future.value(left(
