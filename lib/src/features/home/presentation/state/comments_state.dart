@@ -19,10 +19,25 @@ class CommentsState extends Equatable implements Copyable<CommentsState> {
   ///Defaults to an empty string.
   final String errorMessage;
 
+  ///Length of the list of items to be displayed.
+  ///Defaults to 0.
+  final int itemCount;
+
+  ///Current page number.
+  ///Defaults to 0.
+  final int pageNumber;
+
+  //Whether the list has reached the end.
+  ///Defaults to false.
+  final bool hasReachedEndOfResults;
+
   const CommentsState({
     this.status = AppState.initial,
     this.comments = const [],
+    this.itemCount = 0,
+    this.pageNumber = 0,
     this.errorMessage = "",
+    this.hasReachedEndOfResults = false,
   });
 
   @override
@@ -30,16 +45,30 @@ class CommentsState extends Equatable implements Copyable<CommentsState> {
     AppState? status,
     List<CommentEntity>? comments,
     String? errorMessage,
+    int? itemCount,
+    int? pageNumber,
+    bool? hasReachedEndOfResults,
   }) {
     return CommentsState(
       status: status ?? this.status,
       comments: comments ?? this.comments,
+      itemCount: itemCount ?? this.itemCount,
+      pageNumber: pageNumber ?? this.pageNumber,
       errorMessage: errorMessage ?? this.errorMessage,
+      hasReachedEndOfResults:
+          hasReachedEndOfResults ?? this.hasReachedEndOfResults,
     );
   }
 
   @override
-  List<Object> get props => [status, comments, errorMessage];
+  List<Object> get props => [
+        status,
+        comments,
+        itemCount,
+        pageNumber,
+        errorMessage,
+        hasReachedEndOfResults,
+      ];
 
   @override
   CommentsState copy() => const CommentsState();

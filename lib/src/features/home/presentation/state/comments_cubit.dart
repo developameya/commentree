@@ -31,6 +31,11 @@ class CommentsCubit extends Cubit<CommentsState> {
       emit(state.copyWith(hasReachedEndOfResults: true));
     }
 
+    if (data.isEmpty) {
+      emit(state.copyWith(status: AppState.success));
+      return;
+    }
+
     final resultList = [...state.comments, ...data];
 
     emit(
@@ -38,7 +43,7 @@ class CommentsCubit extends Cubit<CommentsState> {
         status: AppState.success,
         comments: resultList,
         pageNumber: state.pageNumber + 1,
-        listLength: state.hasReachedEndOfResults
+        itemCount: state.hasReachedEndOfResults
             ? resultList.length
             : resultList.length + 1,
         errorMessage: '',
