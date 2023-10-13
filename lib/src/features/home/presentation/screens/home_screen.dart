@@ -18,7 +18,7 @@ class HomeScreen extends StatelessWidget {
       lazy: false,
       child: Scaffold(
         appBar: AppBar(title: const Text("Home")),
-        body: const CommentsView(),
+        body: CommentsView(),
         floatingActionButton: Builder(
           builder: (context) {
             return FloatingActionButton(

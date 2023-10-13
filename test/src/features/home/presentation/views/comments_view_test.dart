@@ -184,7 +184,7 @@ void main() {
       fakeCubit!.emit(fakeCubit!.state.copyWith(
           status: AppState.success,
           comments: testComments,
-          listLength: testComments.length));
+          itemCount: testComments.length));
       await tester.pump();
 
       final findCard = find.byType(GFCard, skipOffstage: false);
@@ -220,7 +220,7 @@ void main() {
           status: AppState.success,
           errorMessage: '',
           comments: testComments,
-          listLength: testComments.length);
+          itemCount: testComments.length);
 
       await tester.pumpWidget(materialAppWrapper(sut!, fakeCubit!));
 
@@ -244,7 +244,7 @@ void main() {
       final testInput = fakeCubit!.state.copyWith(
           status: AppState.success,
           comments: testComments,
-          listLength: testComments.length);
+          itemCount: testComments.length);
       await tester.pumpWidget(materialAppWrapper(sut!, fakeCubit!));
 
       //ACT
@@ -282,7 +282,7 @@ void main() {
       final testInput = fakeCubit!.state.copyWith(
           status: AppState.success,
           comments: testComments,
-          listLength: testComments.length);
+          itemCount: testComments.length);
       await tester.pumpWidget(materialAppWrapper(sut!, fakeCubit!));
 
       //ACT
@@ -310,7 +310,7 @@ void main() {
     final testInput = fakeCubit!.state.copyWith(
         status: AppState.success,
         comments: testComments,
-        listLength: testComments.length + 1);
+        itemCount: testComments.length + 1);
     await tester.pumpWidget(materialAppWrapper(sut!, fakeCubit!));
 
     //ACT

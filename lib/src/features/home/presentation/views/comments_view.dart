@@ -53,7 +53,7 @@ class CommentsView extends HookWidget {
                   return false;
                 },
                 child: ListView.builder(
-                  itemCount: state.listLength,
+                  itemCount: state.itemCount,
                   controller: _scrollController,
                   shrinkWrap: true,
                   itemBuilder: (context, index) =>
