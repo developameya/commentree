@@ -9,6 +9,7 @@ environment:
 dependencies:
   auto_route: ^7.8.4
   dartz: ^0.10.1
+  dio: ^5.3.3
   envied: ^0.3.0+3
   equatable: ^2.0.5
   flutter:
