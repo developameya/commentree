@@ -18,7 +18,7 @@ void main() {
   CommentsCubit? sut;
 
   final List<CommentEntity> testComments = List.generate(
-      10,
+      55,
       (index) => CommentEntity(
           postId: "1-$index",
           id: index.toString(),
@@ -73,12 +73,17 @@ void main() {
   test(
       'when comments are fetched successfully, emits success state with list of comments.',
       () async {
-    final expectedResult =
-        CommentsState(status: AppState.success, comments: testComments);
+    final resultList = testComments.take(10).toList();
+    final expectedResult = CommentsState(
+      status: AppState.success,
+      comments: resultList,
+      pageNumber: 1,
+      itemCount: (resultList.length + 1),
+    );
 
     //ACT
     when(mockUsecase!.call(any))
-        .thenAnswer((_) => Future.value(right(testComments)));
+        .thenAnswer((_) => Future.value(right(resultList)));
 
     sut!.fetchComments();
 
@@ -113,12 +118,18 @@ void main() {
     expect(result, expectedResult);
 
     //2
-    final expectedResult2 =
-        CommentsState(status: AppState.success, comments: testComments);
+    //ARRANGE
+    final resultList = testComments.take(10).toList();
+    final expectedResult2 = CommentsState(
+      status: AppState.success,
+      comments: resultList,
+      pageNumber: 1,
+      itemCount: (resultList.length + 1),
+    );
 
     //ACT
     when(mockUsecase!.call(any))
-        .thenAnswer((_) => Future.value(right(testComments)));
+        .thenAnswer((_) => Future.value(right(resultList)));
 
     sut!.fetchComments();
 
@@ -128,5 +139,77 @@ void main() {
 
     //ASSERT
     expect(result2, expectedResult2);
+  });
+
+  test(
+      'when paged data is fetched successfully, the page number in the state increments, comments list is updated and listLength is updated.',
+      () async {
+    //ARRANGE
+    final testInputList = testComments.take(10).toList();
+    final resultList = testComments.take(20).toList();
+    final expectedResult = CommentsState(
+      status: AppState.success,
+      comments: resultList,
+      pageNumber: 2,
+      itemCount: (resultList.length + 1),
+    );
+
+    final testInput = CommentsState(
+      status: AppState.success,
+      comments: testInputList,
+      pageNumber: 1,
+      itemCount: (testInputList.length + 1),
+    );
+
+    //ACT
+    sut!.emit(testInput);
+
+    when(mockUsecase!.call(any)).thenAnswer(
+        (_) => Future.value(right(testComments.getRange(10, 20).toList())));
+
+    sut!.fetchComments();
+
+    await untilCalled(mockUsecase!.call(any));
+
+    final result = sut!.state;
+
+    //ASSERT
+    expect(result, expectedResult);
+  });
+
+  test(
+      'when the last batch of results are recieved, the item count equates to the length of all the results.',
+      () async {
+    //ARRANGE
+    final testInputList = testComments.take(10).toList();
+    final testInput = CommentsState(
+      status: AppState.success,
+      comments: testInputList,
+      pageNumber: 1,
+      itemCount: (testInputList.length + 1),
+    );
+
+    final resultList = testComments.take(15).toList();
+    final expectedResult = CommentsState(
+        status: AppState.success,
+        comments: resultList,
+        pageNumber: 2,
+        itemCount: resultList.length,
+        hasReachedEndOfResults: true);
+
+    //ACT
+    sut!.emit(testInput);
+
+    when(mockUsecase!.call(any)).thenAnswer(
+        (_) => Future.value(right(testComments.getRange(10, 15).toList())));
+
+    sut!.fetchComments();
+
+    await untilCalled(mockUsecase!.call(any));
+
+    final result = sut!.state;
+
+    //ASSERT
+    expect(result, expectedResult);
   });
 }
