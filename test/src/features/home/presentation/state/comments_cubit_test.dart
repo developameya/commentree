@@ -6,22 +6,35 @@ import 'package:commentree/src/features/home/presentation/state/comments_cubit.d
 import 'package:commentree/src/features/home/presentation/state/comments_state.dart';
 import 'package:dartz/dartz.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:hydrated_bloc/hydrated_bloc.dart';
 import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
 
 import 'comments_cubit_test.mocks.dart';
 
+class MockStorage extends Mock implements Storage {
+  @override
+  Future<void> write(String key, dynamic value) async {}
+}
+
+void initHydratedBloc() {
+  final hydratedStorage = MockStorage();
+  TestWidgetsFlutterBinding.ensureInitialized();
+  HydratedBloc.storage = hydratedStorage;
+}
+
 @GenerateNiceMocks(
     [MockSpec<FetchComments>(onMissingStub: OnMissingStub.throwException)])
 void main() {
+  initHydratedBloc();
   MockFetchComments? mockUsecase;
   CommentsCubit? sut;
 
   final List<CommentEntity> testComments = List.generate(
       55,
       (index) => CommentEntity(
-          postId: "1-$index",
-          id: index.toString(),
+          postId: index.toString(),
+          id: (index + 10).toString(),
           name: "name - $index",
           email: "email- $index",
           body:
@@ -208,6 +221,33 @@ void main() {
     await untilCalled(mockUsecase!.call(any));
 
     final result = sut!.state;
+
+    //ASSERT
+    expect(result, expectedResult);
+  });
+
+  test(
+    'json de-serialisation works as intended.',
+    () {
+      //ARRANGE
+      final expectedResult = sut!.state;
+      final testInput = sut!.toJson(expectedResult)!;
+
+      //ACT
+      final result = sut!.fromJson(testInput);
+
+      //ASSERT
+      expect(result, expectedResult);
+    },
+  );
+
+  test('json serialisation works as intended', () {
+    //ARRANGE
+    final Map<String, dynamic> expectedResult = sut!.state.toMap();
+    final testInput = sut!.state;
+
+    //ACT
+    final result = sut!.toJson(testInput);
 
     //ASSERT
     expect(result, expectedResult);

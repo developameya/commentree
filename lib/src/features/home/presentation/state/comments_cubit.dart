@@ -6,13 +6,18 @@ import 'package:commentree/src/features/home/domain/usecases/home_usecases.dart'
 import 'package:commentree/src/features/home/presentation/state/comments_state.dart';
 import 'package:hydrated_bloc/hydrated_bloc.dart';
 
-class CommentsCubit extends Cubit<CommentsState> {
+///Manages state for the [CommentsView] page.
+///
+class CommentsCubit extends HydratedCubit<CommentsState> {
   final FetchComments _usecase;
   final int _queryCount = 10;
   CommentsCubit({FetchComments? fetchComments})
       : _usecase = fetchComments ?? sl<FetchComments>(),
         super(const CommentsState());
 
+  ///Fetches comments from datasource and updates the state of the view
+  ///as per the response.
+  ///
   void fetchComments() {
     if (state.hasReachedEndOfResults) {
       return;
@@ -52,5 +57,19 @@ class CommentsCubit extends Cubit<CommentsState> {
         errorMessage: '',
       ),
     );
+  }
+
+  @override
+  CommentsState? fromJson(Map<String, dynamic> json) =>
+      CommentsState.fromMap(json);
+
+  @override
+  Map<String, dynamic>? toJson(CommentsState state) => state.toMap();
+
+  @override
+  void onError(Object error, StackTrace stackTrace) {
+    emit(
+        state.copyWith(status: AppState.error, errorMessage: error.toString()));
+    super.onError(error, stackTrace);
   }
 }

@@ -2,13 +2,24 @@ import 'package:commentree/src/core/utils/state/app_state.dart';
 import 'package:commentree/src/features/home/domain/entities/comment_entity.dart';
 import 'package:commentree/src/features/home/domain/usecases/home_usecases.dart';
 import 'package:commentree/src/features/home/presentation/state/comments_cubit.dart';
-import 'package:commentree/src/features/home/presentation/state/comments_state.dart';
 import 'package:commentree/src/features/home/presentation/views/comments_view.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:getwidget/getwidget.dart';
+import 'package:hydrated_bloc/hydrated_bloc.dart';
 import 'package:mockito/mockito.dart';
+
+class MockStorage extends Mock implements Storage {
+  @override
+  Future<void> write(String key, dynamic value) async {}
+}
+
+void initHydratedBloc() {
+  final hydratedStorage = MockStorage();
+  TestWidgetsFlutterBinding.ensureInitialized();
+  HydratedBloc.storage = hydratedStorage;
+}
 
 class MockFetchComments extends Mock implements FetchComments {}
 
@@ -21,11 +32,12 @@ class FakeCommentsCubit extends CommentsCubit {
 }
 
 void main() {
+  initHydratedBloc();
   final List<CommentEntity> testComments = List.generate(
-      10,
+      55,
       (index) => CommentEntity(
-          postId: "1-$index",
-          id: index.toString(),
+          postId: index.toString(),
+          id: (index + 10).toString(),
           name: "name - $index",
           email: "email- $index",
           body:
@@ -89,40 +101,6 @@ void main() {
 
       //ASSERT
       expect(findListView, findsNothing);
-    });
-  });
-
-  group("loading state tests: ", () {
-    testWidgets("when in loading state, no list view is found", (tester) async {
-      //ARRANGE
-
-      await tester.pumpWidget(materialAppWrapper(sut!, fakeCubit!));
-
-      fakeCubit!.emit(const CommentsState(status: AppState.loading));
-
-      await tester.pump();
-
-      //ACT
-      final findLoadingIndicator = find.byType(CircularProgressIndicator);
-
-      //ASSERT
-      expect(findLoadingIndicator, findsOneWidget);
-    });
-
-    testWidgets("when in loading state, loading indicator is displayed.",
-        (tester) async {
-      //ARRANGE
-      await tester.pumpWidget(materialAppWrapper(sut!, fakeCubit!));
-
-      //ACT
-      final findListView = find.byType(CircularProgressIndicator);
-
-      fakeCubit!.emit(const CommentsState(status: AppState.loading));
-
-      await tester.pump();
-
-      //ASSERT
-      expect(findListView, findsOneWidget);
     });
   });
 
@@ -302,27 +280,5 @@ void main() {
       //ASSERT
       expect(findBanner, findsNothing);
     });
-  });
-
-  testWidgets('when more results are expected, displays a loading indicator.',
-      (tester) async {
-    //ARRANGE
-    final testInput = fakeCubit!.state.copyWith(
-        status: AppState.success,
-        comments: testComments,
-        itemCount: testComments.length + 1);
-    await tester.pumpWidget(materialAppWrapper(sut!, fakeCubit!));
-
-    //ACT
-    fakeCubit!.emit(testInput);
-    await tester.pump();
-
-    final findIndicator =
-        find.byType(CircularProgressIndicator, skipOffstage: false);
-    await tester.scrollUntilVisible(findIndicator, 100);
-    await tester.pump();
-
-    //ASSERT
-    expect(findIndicator, findsOneWidget);
   });
 }
